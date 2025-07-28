@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 const WaferSimulator = () => {
@@ -26,16 +26,7 @@ const WaferSimulator = () => {
   const [animationSpeed, setAnimationSpeed] = useState(1.0);
   const [currentView, setCurrentView] = useState('trajectory');
   const [selectedPadRadii, setSelectedPadRadii] = useState([200]);
-  const [barAnalysis, setBarAnalysis] = useState({ 
-    padBarData: Array.from({ length: 40 }, (_, i) => ({
-      xRange: `${-200 + i * 10}~${-190 + i * 10}`,
-      count: 0
-    })), 
-    waferBarData: Array.from({ length: 30 }, (_, i) => ({
-      xRange: `${-150 + i * 10}~${-140 + i * 10}`,
-      distance: 0
-    }))
-  });
+  // barAnalysis 상태는 더 이상 필요하지 않으므로 제거
   const [simulationKey, setSimulationKey] = useState(0);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
@@ -82,6 +73,7 @@ const WaferSimulator = () => {
         return maxTime;
       }
       
+      // 다음 프레임 요청을 먼저 설정
       if (isPlayingRef.current) {
         animationRef.current = requestAnimationFrame(animate);
       }
@@ -415,8 +407,19 @@ const WaferSimulator = () => {
   }, [runSimulation, simulationKey]);
 
   // 📌 실시간 막대그래프 데이터 생성 (애니메이션 시간에 따라 업데이트)
-  useEffect(() => {
-    if (!results || !results.padTrajectoryData || !results.trajectoryData) return;
+  const barAnalysis = useMemo(() => {
+    if (!results || !results.padTrajectoryData || !results.trajectoryData) {
+      return { 
+        padBarData: Array.from({ length: 40 }, (_, i) => ({
+          xRange: `${-200 + i * 10}~${-190 + i * 10}`,
+          count: 0
+        })), 
+        waferBarData: Array.from({ length: 30 }, (_, i) => ({
+          xRange: `${-150 + i * 10}~${-140 + i * 10}`,
+          distance: 0
+        }))
+      };
+    }
 
     // 현재 애니메이션 시간까지의 데이터만 사용
     const currentTimeIndex = Math.min(Math.floor(animationTime), results.timeSeriesData.length - 1);
@@ -486,8 +489,8 @@ const WaferSimulator = () => {
       distance: waferDistances[i]
     }));
 
-    setBarAnalysis({ padBarData, waferBarData });
-  }, [results, animationTime, isInitialLoad]);
+    return { padBarData, waferBarData };
+  }, [results, animationTime]);
 
   const addCustomPoint = () => {
     if (newPointRadius <= params.R_wafer && newPointRadius >= 0) {
@@ -552,17 +555,6 @@ const WaferSimulator = () => {
     }
     lastFrameTimeRef.current = 0;
     setAnimationTime(0);
-    // 막대그래프 데이터 초기화
-    setBarAnalysis({ 
-      padBarData: Array.from({ length: 40 }, (_, i) => ({
-        xRange: `${-200 + i * 10}~${-190 + i * 10}`,
-        count: 0
-      })), 
-      waferBarData: Array.from({ length: 30 }, (_, i) => ({
-        xRange: `${-150 + i * 10}~${-140 + i * 10}`,
-        distance: 0
-      }))
-    });
     // 초기 로딩 상태로 재설정
     setIsInitialLoad(true);
     // 시뮬레이션 키 증가하여 강제 재실행
