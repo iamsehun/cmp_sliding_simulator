@@ -648,13 +648,13 @@ const animate = useCallback((currentTime) => {
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
-    <h1 className="text-2xl sm:text-3xl font-bold text-center">FP simulation</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-center">FP Simulation</h1>
 
       <div className="bg-white p-4 rounded-lg shadow-lg space-y-4">
 
         <div className="flex flex-wrap items-center gap-4">
           <div>
-            <label className="block text-xs font-medium mb-1">웨이퍼 Radius</label>
+                         <label className="block text-xs font-medium mb-1">Wafer Radius</label>
             <input
               type="number"
               value={params.R_wafer}
@@ -663,7 +663,7 @@ const animate = useCallback((currentTime) => {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">패드 Radius</label>
+                         <label className="block text-xs font-medium mb-1">Pad Radius</label>
             <input
               type="number"
               value={params.R_pad}
@@ -672,7 +672,7 @@ const animate = useCallback((currentTime) => {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">패드 RPM</label>
+                         <label className="block text-xs font-medium mb-1">Pad RPM</label>
             <input
               type="number"
               value={params.rpm_pad}
@@ -681,7 +681,7 @@ const animate = useCallback((currentTime) => {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">웨이퍼 RPM</label>
+                         <label className="block text-xs font-medium mb-1">Wafer RPM</label>
             <input
               type="number"
               value={params.rpm_wafer}
@@ -699,7 +699,7 @@ const animate = useCallback((currentTime) => {
             />
         </div>
         <div>
-            <label className="block text-xs font-medium mb-1">Oscillation 속도</label>
+                         <label className="block text-xs font-medium mb-1">Oscillation Speed</label>
             <input
             type="number"
             step="0.1"
@@ -716,7 +716,7 @@ const animate = useCallback((currentTime) => {
                 onChange={(e) => setParams({...params, oscillation_enabled: e.target.checked})}
                 className="mr-2"
             />
-            Oscillation on/off
+                           Oscillation On/Off
             </label>
         </div>
         <div className="flex items-center space-x-4">
@@ -727,7 +727,7 @@ const animate = useCallback((currentTime) => {
                 onChange={() => setActiveWafers(prev => ({...prev, left: !prev.left}))}
                 className="mr-2"
             />
-            wafer1
+                           Wafer 1
             </label>
             <label className="flex items-center">
             <input
@@ -736,7 +736,7 @@ const animate = useCallback((currentTime) => {
                 onChange={() => setActiveWafers(prev => ({...prev, right: !prev.right}))}
                 className="mr-2"
             />
-            wafer2
+                           Wafer 2
             </label>
         </div>
         </div>
@@ -750,13 +750,13 @@ const animate = useCallback((currentTime) => {
                 onClick={() => toggleGraph('padCoordinate')}
                 className={`px-4 py-2 rounded text-sm ${visibleGraphs.padCoordinate ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
             >
-                이동궤적
+                                 Movement Trajectory
             </button>
             <button
                 onClick={() => toggleGraph('heatmap')}
                 className={`px-4 py-2 rounded text-sm ${visibleGraphs.heatmap ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
             >
-                wafer 연마
+                                 Wafer Polishing
             </button>
             <button
                 onClick={() => toggleGraph('velocityVector')}
@@ -768,7 +768,7 @@ const animate = useCallback((currentTime) => {
                 onClick={() => toggleGraph('pad200mmTrace')}
                 className={`px-4 py-2 rounded text-sm ${visibleGraphs.pad200mmTrace ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
             >
-                스크레치 시뮬레이션
+                                 Scratch Simulation
             </button>
             </div>
             <div className="flex items-center space-x-4">
@@ -777,17 +777,17 @@ const animate = useCallback((currentTime) => {
                 onClick={toggleAnimation}
                 className={`px-4 py-2 rounded ${isPlaying ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}
                 >
-                {isPlaying ? '일시정지' : '재생'}
+                                   {isPlaying ? 'Pause' : 'Play'}
                 </button>
                 <button
                 onClick={resetAnimation}
                 className="px-4 py-2 rounded bg-gray-500 text-white"
                 >
-                리셋
+                                   Reset
                 </button>
             </div>
             <div className="flex items-center space-x-2">
-                <label className="text-sm">속도:</label>
+                                 <label className="text-sm">Speed:</label>
                 <select
                 value={animationSpeed}
                 onChange={(e) => setAnimationSpeed(Number(e.target.value))}
@@ -801,7 +801,7 @@ const animate = useCallback((currentTime) => {
                 </select>
             </div>
                            <div className="flex items-center space-x-2">
-                 <span className="text-sm">시간:</span>
+                 <span className="text-sm">Time:</span>
                  <input
                    type="range"
                    min="0"
@@ -819,7 +819,7 @@ const animate = useCallback((currentTime) => {
 
         {visibleGraphs.pad200mmTrace && (
         <div className="border-t pt-3">
-            <h3 className="font-semibold text-sm mb-2">스크레치 시뮬레이션용 점위치</h3>
+            <h3 className="font-semibold text-sm mb-2">Scratch Simulation Point Positions</h3>
             <div className="flex flex-wrap gap-2 mb-2">
             {[50, 100, 150, 200, 250, 300, 350, 390].map(radius => (
                 <label key={radius} className="flex items-center">
@@ -844,7 +844,7 @@ const animate = useCallback((currentTime) => {
 
         {visibleGraphs.padCoordinate && (
         <div className="border-t pt-3">
-            <h3 className="font-semibold text-sm mb-2">이동궤적용 점위치</h3>
+            <h3 className="font-semibold text-sm mb-2">Movement Trajectory Point Positions</h3>
             <div className="flex items-center space-x-2 mb-2">
             <input
                 type="number"
@@ -1175,7 +1175,7 @@ const animate = useCallback((currentTime) => {
                         onClick={addCustomPoint}
                         className="w-full px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
                     >
-                        속도벡터 점 추가
+                        Velocity Vector 점 추가
                     </button>
                     
                     {customPoints.length > 0 && (
