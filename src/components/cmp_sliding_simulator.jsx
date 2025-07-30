@@ -201,28 +201,28 @@ const [newPointAngle, setNewPointAngle] = useState(150);
           points: []
         };
 
-        // 패드 상의 점들이 웨이퍼를 지나가는 궤적 추적 (스크레치 시뮬레이션)
+                  // Track trajectories of points on the pad as they pass over the wafer (Scratch Simulation)
         selectedPadRadii.forEach(padRadius => {
-          // 패드 상의 고정점 (패드 좌표계에서)
+                      // Fixed point on the pad (in pad coordinate system)
           const padPoint = { x: padRadius, y: 0 };
           
-          // 패드 회전 적용하여 절대 좌표로 변환
+                      // Apply pad rotation to convert to absolute coordinates
           const cos_p = Math.cos(pad_theta);
           const sin_p = Math.sin(pad_theta);
           const global_x = padPoint.x * cos_p - padPoint.y * sin_p;
           const global_y = padPoint.x * sin_p + padPoint.y * cos_p;
           
-          // 웨이퍼 중심 기준 상대 좌표 (진동 고려)
+                      // Relative coordinates from wafer center (considering oscillation)
           const rel_x = global_x - wafer_xc;
           const rel_y = global_y - wafer_yc;
           
-          // 웨이퍼 좌표계로 변환 (웨이퍼 회전의 역변환)
+                      // Convert to wafer coordinate system (inverse transformation of wafer rotation)
           const cos_w_inv = Math.cos(-wafer_theta);
           const sin_w_inv = Math.sin(-wafer_theta);
           const wafer_x = rel_x * cos_w_inv - rel_y * sin_w_inv;
           const wafer_y = rel_x * sin_w_inv + rel_y * cos_w_inv;
           
-          // 회전 추적
+                      // Rotation tracking
           const fullRotation = 2 * Math.PI;
           const currentRotation = Math.floor(pad_theta / fullRotation);
           const tracking = rotationTrackingByRadius[padRadius];
@@ -238,10 +238,10 @@ const [newPointAngle, setNewPointAngle] = useState(150);
             tracking.rotationCount = currentRotation;
           }
           
-          // 웨이퍼 범위 내에 있는지 확인 (스크레치 시뮬레이션용)
+                      // Check if within wafer range (for Scratch Simulation)
           const distanceFromWaferCenter = Math.sqrt(wafer_x * wafer_x + wafer_y * wafer_y);
           if (distanceFromWaferCenter <= params.R_wafer * 1.1) { // 10% 여유로 증가
-            // 모든 점을 기록 (적응형 샘플링 제거)
+            // Record all points (adaptive sampling removed)
             tracking.currentRotationTraces.push({ 
               x: wafer_x, 
               y: wafer_y, 
@@ -254,47 +254,47 @@ const [newPointAngle, setNewPointAngle] = useState(150);
           }
         });
 
-        // 각 웨이퍼 점에 대한 계산
+        // Calculation for each wafer point
         for (let i = 0; i < num_actual_grid; i++) {
           const wx = wafer_points[i].x;
           const wy = wafer_points[i].y;
           const zone = wafer_points[i].zone;
           
-          // 웨이퍼 점의 절대 좌표
+          // Absolute coordinates of wafer point
           const abs_x = wafer_xc + (wx * cos_w - wy * sin_w);
           const abs_y = wafer_yc + (wx * sin_w + wy * cos_w);
           
-          // 속도 계산
-          // 1. 웨이퍼 중심의 속도
+          // Velocity calculation
+          // 1. Wafer center velocity
           const v_center_x = wafer_vx_oscillation[k];
           const v_center_y = 0.0;
           
-          // 2. 웨이퍼 회전에 의한 속도 (수정됨)
+          // 2. Velocity due to wafer rotation (corrected)
           const v_rotation_x = -omega_wafer * (wx * sin_w + wy * cos_w);
           const v_rotation_y = omega_wafer * (wx * cos_w - wy * sin_w);
           
-          // 3. 전체 속도
+          // 3. Total velocity
           const v_gx = v_center_x + v_rotation_x;
           const v_gy = v_center_y + v_rotation_y;
           
-          // 4. 패드의 속도 (해당 위치에서)
+          // 4. Pad velocity (at that position)
           const v_pad_x = -omega_pad * abs_y;
           const v_pad_y = omega_pad * abs_x;
           
-          // 5. 상대 속도
+          // 5. Relative velocity
           const v_rel_x = v_gx - v_pad_x;
           const v_rel_y = v_gy - v_pad_y;
           const speed_rel = Math.sqrt(v_rel_x * v_rel_x + v_rel_y * v_rel_y);
           
-          // 누적 거리 계산 (패드 상에서의 상대적 이동거리)
+          // Cumulative distance calculation (relative movement distance on pad)
           if (k > 0) {
-            // 상대속도를 이용한 거리 계산 (더 정확한 방법)
+            // Distance calculation using relative velocity (more accurate method)
             const dt = time_steps[k] - time_steps[k-1];
             const distance = speed_rel * dt;
             cumulativeDistance[i] += distance;
           }
           
-          // 패드 좌표계로 변환 (패드 회전의 역변환)
+          // Convert to pad coordinate system (inverse transformation of pad rotation)
           const cos_p_neg = Math.cos(-pad_theta);
           const sin_p_neg = Math.sin(-pad_theta);
           const pad_local_x = abs_x * cos_p_neg - abs_y * sin_p_neg;
@@ -308,7 +308,7 @@ const [newPointAngle, setNewPointAngle] = useState(150);
             abs_y: abs_y
           });
 
-          // 왼쪽 웨이퍼 계산
+          // Left wafer calculation
           const abs_x_left = wafer_xc_left + (wx * cos_w - wy * sin_w);
           const abs_y_left = wafer_yc_left + (wx * sin_w + wy * cos_w);
           
@@ -323,7 +323,7 @@ const [newPointAngle, setNewPointAngle] = useState(150);
             abs_y: abs_y_left
           });
           
-          // 궤적 데이터 저장
+          // Trajectory data storage
           trajectoryData[i].push({
             time: t,
             x: abs_x,
@@ -333,7 +333,7 @@ const [newPointAngle, setNewPointAngle] = useState(150);
             zone: zone
           });
 
-          // 속도 데이터 저장
+          // Velocity data storage
           velocityData[i].push({
             time: t,
             vx: v_rel_x,
@@ -354,7 +354,7 @@ const [newPointAngle, setNewPointAngle] = useState(150);
         timeSeriesData.push(timeStepData);
       }
       
-      // 마지막 회전 데이터 저장
+      // Store final rotation data
       selectedPadRadii.forEach(padRadius => {
         const tracking = rotationTrackingByRadius[padRadius];
         if (tracking.currentRotationTraces.length > 0) {
@@ -366,7 +366,7 @@ const [newPointAngle, setNewPointAngle] = useState(150);
         padRadiiTrajectories[padRadius] = tracking.allRotations;
       });
 
-      // 통계 계산
+      // Statistics calculation
       const maxDistance = Math.max(...cumulativeDistance);
       const minDistance = Math.min(...cumulativeDistance);
       const avgDistance = cumulativeDistance.reduce((a, b) => a + b, 0) / cumulativeDistance.length;
@@ -395,7 +395,7 @@ const [newPointAngle, setNewPointAngle] = useState(150);
     runSimulation();
   }, [runSimulation, simulationKey]);
 
-  // 실시간 막대그래프 데이터 생성
+  // Real-time bar chart data generation
   const barAnalysis = useMemo(() => {
     if (!results || !results.padTrajectoryData || !results.trajectoryData || isInitialLoad) {
       return { 
@@ -551,10 +551,10 @@ const animate = useCallback((currentTime) => {
     };
   }, [isPlaying, animate]);
 
-  // 슬라이더로 시간 변경 시 애니메이션 일시정지
+  // Pause animation when time is changed by slider
   useEffect(() => {
     if (isPlaying) {
-      // 슬라이더로 수동 조정 시 애니메이션 일시정지
+      // Pause animation when manually adjusted by slider
       setIsPlaying(false);
       isPlayingRef.current = false;
       if (animationRef.current) {
@@ -848,14 +848,14 @@ const animate = useCallback((currentTime) => {
             <div className="flex items-center space-x-2 mb-2">
             <input
                 type="number"
-                placeholder="반지름"
+                placeholder="Radius"
                 value={newPointRadius}
                 onChange={(e) => setNewPointRadius(Number(e.target.value))}
                 className="w-20 px-2 py-1 text-sm border rounded"
             />
             <input
                 type="number"
-                placeholder="각도"
+                placeholder="Angle"
                 value={newPointAngle}
                 onChange={(e) => setNewPointAngle(Number(e.target.value))}
                 className="w-20 px-2 py-1 text-sm border rounded"
@@ -864,7 +864,7 @@ const animate = useCallback((currentTime) => {
                 onClick={addCustomPoint}
                 className="px-3 py-1 bg-blue-500 text-white text-sm rounded"
             >
-                추가
+                Add
             </button>
             </div>
             
@@ -877,7 +877,7 @@ const animate = useCallback((currentTime) => {
                     onClick={() => removeCustomPoint(point.id)}
                     className="text-red-500 hover:text-red-700"
                     >
-                    삭제
+                    Delete
                     </button>
                 </div>
                 ))}
@@ -896,7 +896,7 @@ const animate = useCallback((currentTime) => {
             {visibleGraphs.padCoordinate && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="bg-white border rounded-lg p-4">
-                    <h4 className="text-lg font-semibold mb-4">이동궤적</h4>
+                    <h4 className="text-lg font-semibold mb-4">Movement Trajectory</h4>
                     <div className="relative w-full h-80 bg-gray-50 border">
                     <svg width="100%" height="100%" viewBox={`${-results.R_pad*1.2} ${-results.R_pad*1.2} ${results.R_pad*2.4} ${results.R_pad*2.4}`}>
                         <circle cx="0" cy="0" r={results.R_pad} fill="lightgray" opacity="0.3" stroke="gray" strokeWidth="2" />
@@ -913,7 +913,7 @@ const animate = useCallback((currentTime) => {
                             <g transform={`rotate(${currentData.wafer_angle * 180 / Math.PI})`}>
                             <line x1="0" y1="0" x2={results.R_wafer * 0.8} y2="0" stroke="blue" strokeWidth="3" />
                             </g>
-                            <text x="0" y={results.R_wafer + 20} textAnchor="middle" fontSize="10" fill="blue">R웨이퍼</text>
+                            <text x="0" y={results.R_wafer + 20} textAnchor="middle" fontSize="10" fill="blue">R Wafer</text>
                         </g>
                         )}
 
@@ -923,7 +923,7 @@ const animate = useCallback((currentTime) => {
                             <g transform={`rotate(${currentData.wafer_angle * 180 / Math.PI})`}>
                             <line x1="0" y1="0" x2={results.R_wafer * 0.8} y2="0" stroke="green" strokeWidth="3" />
                             </g>
-                            <text x="0" y={results.R_wafer + 20} textAnchor="middle" fontSize="10" fill="green">L웨이퍼</text>
+                            <text x="0" y={results.R_wafer + 20} textAnchor="middle" fontSize="10" fill="green">L Wafer</text>
                         </g>
                         )}
 
@@ -984,7 +984,7 @@ const animate = useCallback((currentTime) => {
             {visibleGraphs.heatmap && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="bg-white border rounded-lg p-4">
-                    <h4 className="text-lg font-semibold mb-4">wafer 연마</h4>
+                    <h4 className="text-lg font-semibold mb-4">Wafer Polishing</h4>
                     <div className="relative w-full h-80 bg-gray-50 border">
                     <svg width="100%" height="100%" viewBox={`${-results.R_wafer*1.2} ${-results.R_wafer*1.2} ${results.R_wafer*2.4} ${results.R_wafer*2.4}`}>
                         <circle cx="0" cy="0" r={results.R_wafer} fill="none" stroke="blue" strokeWidth="3" />
@@ -1018,7 +1018,7 @@ const animate = useCallback((currentTime) => {
                 </div>
 
                 <div className="bg-white border rounded-lg p-4">
-                    <h4 className="text-lg font-semibold mb-4">wafer Profile</h4>
+                    <h4 className="text-lg font-semibold mb-4">Wafer Profile</h4>
                     <ResponsiveContainer width="100%" height={320}>
                     <BarChart data={barAnalysis.waferBarData}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -1035,7 +1035,7 @@ const animate = useCallback((currentTime) => {
             {visibleGraphs.velocityVector && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="bg-white border rounded-lg p-4">
-                    <h4 className="text-lg font-semibold mb-4">속도 벡터</h4>
+                    <h4 className="text-lg font-semibold mb-4">Velocity Vector</h4>
                     <div className="relative w-full h-80 bg-gray-50 border">
                     <svg width="100%" height="100%" viewBox={`${-results.R_wafer*1.2} ${-results.R_wafer*1.2} ${results.R_wafer*2.4} ${results.R_wafer*2.4}`}>
                         <circle cx="0" cy="0" r={results.R_wafer} fill="none" stroke="blue" strokeWidth="3" />
@@ -1119,26 +1119,26 @@ const animate = useCallback((currentTime) => {
 
                         <g transform="translate(-400, -350)">
                         <rect x="0" y="0" width="120" height="80" fill="white" opacity="0.95" stroke="gray" strokeWidth="1" rx="3"/>
-                        <text x="5" y="15" fontSize="10" fontWeight="bold" fill="black">속도 벡터 범례</text>
+                        <text x="5" y="15" fontSize="10" fontWeight="bold" fill="black">Velocity Vector Legend</text>
                                                   <g>
                             <line x1="5" y1="25" x2="20" y2="25" stroke="red" strokeWidth="1.5" markerEnd="url(#arrowhead)"/>
                             <circle cx="5" cy="25" r="2" fill="red"/>
-                            <text x="25" y="30" fontSize="8" fill="black">중심점</text>
+                            <text x="25" y="30" fontSize="8" fill="black">Center</text>
                           </g>
                           <g>
                             <line x1="5" y1="40" x2="20" y2="40" stroke="red" strokeWidth="1.5" markerEnd="url(#arrowhead)"/>
                             <circle cx="5" cy="40" r="2" fill="blue"/>
-                            <text x="25" y="45" fontSize="8" fill="black">가장자리</text>
+                            <text x="25" y="45" fontSize="8" fill="black">Edge</text>
                           </g>
                           <g>
                             <line x1="5" y1="55" x2="20" y2="55" stroke="red" strokeWidth="1.5" markerEnd="url(#arrowhead)"/>
                             <circle cx="5" cy="55" r="2" fill="green"/>
-                            <text x="25" y="60" fontSize="8" fill="black">고정점</text>
+                            <text x="25" y="60" fontSize="8" fill="black">Fixed</text>
                           </g>
                           <g>
                             <line x1="5" y1="70" x2="20" y2="70" stroke="purple" strokeWidth="2" markerEnd="url(#arrowhead)"/>
                             <circle cx="5" cy="70" r="2" fill="purple"/>
-                            <text x="25" y="75" fontSize="8" fill="black">커스텀점</text>
+                            <text x="25" y="75" fontSize="8" fill="black">Custom</text>
                           </g>
                         </g>
                     </svg>
@@ -1203,7 +1203,7 @@ const animate = useCallback((currentTime) => {
             
             {visibleGraphs.pad200mmTrace && (
                 <div className="bg-white border rounded-lg p-4">
-                <h4 className="text-lg font-semibold mb-4">스크레치 시뮬레이션</h4>
+                <h4 className="text-lg font-semibold mb-4">Scratch Simulation</h4>
                 <div className="relative w-full h-80 bg-gray-50 border">
                     <svg width="100%" height="100%" viewBox={`${-results.R_wafer*1.2} ${-results.R_wafer*1.2} ${results.R_wafer*2.4} ${results.R_wafer*2.4}`}>
                     <circle cx="0" cy="0" r={results.R_wafer} fill="none" stroke="blue" strokeWidth="3" />
@@ -1296,7 +1296,7 @@ const animate = useCallback((currentTime) => {
                     
                     <g transform="translate(-400, -350)">
                         <rect x="0" y="0" width="140" height={selectedPadRadii.length * 15 + 20} fill="white" opacity="0.95" stroke="gray" strokeWidth="1" rx="3"/>
-                        <text x="5" y="15" fontSize="10" fontWeight="bold" fill="black">스크레치 시뮬레이션</text>
+                        <text x="5" y="15" fontSize="10" fontWeight="bold" fill="black">Scratch Simulation</text>
                         {selectedPadRadii.map((radius, i) => {
                         const radiusColors = {
                             50: '#FF6B6B', 100: '#4ECDC4', 150: '#45B7D1', 200: '#FFA726',
@@ -1332,19 +1332,19 @@ const animate = useCallback((currentTime) => {
             </ul>
             </div>
             <div className="bg-white p-3 rounded">
-            <h4 className="font-medium text-green-700 mb-2">활성 웨이퍼</h4>
+                           <h4 className="font-medium text-green-700 mb-2">Active Wafers</h4>
             <ul className="text-sm space-y-1">
-                <li>• wafer1: {activeWafers.left ? '✅' : '❌'}</li>
-                <li>• wafer2: {activeWafers.right ? '✅' : '❌'}</li>
+                                 <li>• Wafer 1: {activeWafers.left ? '✅' : '❌'}</li>
+                 <li>• Wafer 2: {activeWafers.right ? '✅' : '❌'}</li>
             </ul>
             </div>
             <div className="bg-white p-3 rounded">
-            <h4 className="font-medium text-green-700 mb-2">표시 그래프</h4>
+                           <h4 className="font-medium text-green-700 mb-2">Visible Graphs</h4>
             <ul className="text-sm space-y-1">
-                <li>• 이동궤적: {visibleGraphs.padCoordinate ? '✅' : '❌'}</li>
-                <li>• wafer 연마: {visibleGraphs.heatmap ? '✅' : '❌'}</li>
-                <li>• 속도벡터: {visibleGraphs.velocityVector ? '✅' : '❌'}</li>
-                <li>• 스크레치 시뮬레이션: {visibleGraphs.pad200mmTrace ? '✅' : '❌'}</li>
+                                 <li>• Movement Trajectory: {visibleGraphs.padCoordinate ? '✅' : '❌'}</li>
+                 <li>• Wafer Polishing: {visibleGraphs.heatmap ? '✅' : '❌'}</li>
+                 <li>• Velocity Vector: {visibleGraphs.velocityVector ? '✅' : '❌'}</li>
+                 <li>• Scratch Simulation: {visibleGraphs.pad200mmTrace ? '✅' : '❌'}</li>
             </ul>
             </div>
         </div>
